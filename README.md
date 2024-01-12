@@ -1,5 +1,5 @@
-Silahkan untuk mengimport <a href="https://github.com/Kurniawanrzk/STANDZ-api/blob/main/db_standz.sql">db_stanz.sql</a> di mysql db
-<a href="https://github.com/Kurniawanrzk/STANDZ-api/blob/main/API-STANDZ.postman_collection.json"></a>
+## Silahkan untuk mengimport <a href="https://github.com/Kurniawanrzk/STANDZ-api/blob/main/db_standz.sql">db_stanz.sql</a> di mysql db
+## <a href="https://github.com/Kurniawanrzk/STANDZ-api/blob/main/API-STANDZ.postman_collection.json">Postman Collection</a>
 
 # API Documentation
 

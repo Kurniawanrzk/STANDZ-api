@@ -1,6 +1,18 @@
 ## Silahkan untuk mengimport <a href="https://github.com/Kurniawanrzk/STANDZ-api/blob/main/db_standz.sql">db_stanz.sql</a> di mysql db
 ## <a href="https://github.com/Kurniawanrzk/STANDZ-api/blob/main/API-STANDZ.postman_collection.json">Postman Collection</a>
 
+
+## Step By Step using this code
+1. Run git clone <my-cool-project>
+2. Run composer install
+3. Run cp .env.example .env
+4. Run php artisan key:generate
+5. Run php artisan migrate
+6. Run php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
+7. Run php artisan jwt:secret
+8. Run php artisan serve
+9. Go to link localhost:8000
+
 # API Documentation
 
 ## Authentication

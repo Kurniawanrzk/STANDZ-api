@@ -8,85 +8,117 @@ use App\Models\Landowner;
 use App\Models\Landphoto;
 use App\Models\Landreview;
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-
-use function PHPUnit\Framework\isNan;
-use function PHPUnit\Framework\isNull;
 
 class LandController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth:api', ['except' => ['get_all_land']]);
+    }   
+
+    
+    public function get_all_land(Request $req)
+{   
+    $searchTerm = $req->search;
+    $orderBy = $req->has("lth") ? ($req->lth ? 'rental_price' : 'id') : 'id';
+    $perPage = $req->has("perPage") ? $req->perPage : 4;
+
+    if (is_null($searchTerm)) {
+        $all_lands = Land::orderBy($orderBy, $req->lth ? 'asc' : 'desc')->paginate($perPage);
+    } else {
+        $searchTerms = explode(' ', $searchTerm);
+        $all_lands = Land::where(function ($query) use ($searchTerms) {
+            foreach ($searchTerms as $term) {
+                $query->where(function ($query) use ($term) {
+                    $query->where('land_name', 'LIKE', '%' . $term . '%')
+                        ->orWhere('location', 'LIKE', '%' . $term . '%')
+                        ->orWhere('provinsi', 'LIKE', '%' . $term . '%')
+                        ->orWhere('kota', 'LIKE', '%' . $term . '%')
+                        ->orWhere('kecamatan', 'LIKE', '%' . $term . '%')
+                        ->orWhere('kelurahan', 'LIKE', '%' . $term . '%');
+                });
+            }
+        })->orderBy($orderBy, $req->lth ? 'asc' : 'desc')->paginate($perPage);
     }
 
-    public function get_all_land(Request $req)
-    {   
-        $searchTerm = $req->search;
-    
-        if (is_null($searchTerm)) {
-            $all_lands = Land::all();
-        } else {
-            $searchTerms = explode(' ', $searchTerm);
-            $all_lands = Land::where(function ($query) use ($searchTerms) {
-                foreach ($searchTerms as $term) {
-                    $query->where(function ($query) use ($term) {
-                        $query->where('land_name', 'LIKE', '%' . $term . '%')
-                            ->orWhere('location', 'LIKE', '%' . $term . '%')
-                            ->orWhere('provinsi', 'LIKE', '%' . $term . '%')
-                            ->orWhere('kota', 'LIKE', '%' . $term . '%')
-                            ->orWhere('kecamatan', 'LIKE', '%' . $term . '%')
-                            ->orWhere('kelurahan', 'LIKE', '%' . $term . '%');
-                    });
-                }
-            })->get();
-            
-        }
-    
-        foreach ($all_lands as $land) {
-            $rating = Landreview::where("land_id", $land->id)->pluck("rating")->toArray();
-            
-            $land->rating = count($rating) > 0 ? round(array_sum($rating) / count($rating), 2) : 0;
-    
-            $land->land_photos = Landphoto::where("land_id", $land->id)->pluck("file_name")->toArray();
-            $landowner = Landowner::find($land->landowner_id);
+    foreach ($all_lands as $land) {
+        $rating = Landreview::where("land_id", $land->id)->pluck("rating")->toArray();
+        
+        $land->rating = count($rating) > 0 ? round(array_sum($rating) / count($rating), 2) : 0;
 
-if ($landowner) {
-    $user = User::find($landowner->user_id);
-    $land->land_owner = [
-        'name' => $user->name,
-        'username' => $user->username,
-        'email' => $user->email,
-        'phone_number' => $landowner->phone_number,
-    ];
-} else {
-    // Handle the case where $landowner is null
-    $land->land_owner = null;
+        $land->land_photos = Landphoto::where("land_id", $land->id)->pluck("file_name")->toArray();
+        $landowner = Landowner::find($land->landowner_id);
+
+        if ($landowner) {
+            $user = User::find($landowner->user_id);
+            $land->land_owner = [
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'phone_number' => $landowner->phone_number,
+            ];
+        } else {
+            // Handle the case where $landowner is null
+            $land->land_owner = null;
+        }       
+
+        unset($land->id);
+        unset($land->created_at);
+        unset($land->updated_at);
+    }
+
+    return response($all_lands);
 }
 
     
-            unset($land->id);
-            unset($land->created_at);
-            unset($land->updated_at);
-        }
-    
-        return response($all_lands);
+    public function get_detail_land($username, $slug) {
+        $land = Land::where("slug", $slug)
+        ->where("landowner_id", Landowner::where("user_id", User::where("username", $username)->first()->id)->first()->id)->first();
+        $rating = Landreview::where("land_id", $land->id)->pluck("rating")->toArray();
+        
+        $land->rating = count($rating) > 0 ? round(array_sum($rating) / count($rating), 2) : 0;
+
+        $land->land_photos = Landphoto::where("land_id", $land->id)->pluck("file_name")->toArray();
+        $landowner = Landowner::find($land->landowner_id);
+
+        if ($landowner) {
+            $user = User::find($landowner->user_id);
+            $land->land_owner = [
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'phone_number' => $landowner->phone_number,
+            ];
+        } else {
+            // Handle the case where $landowner is null
+            $land->land_owner = null;
+        }       
+
+        unset($land->id);
+        unset($land->created_at);
+        unset($land->updated_at);
+        return $land;
     }
-    
-    
-    
+
+    public function check_as_landowner() {
+        $u = Auth::user();
+        if(!Landowner::where('user_id', $u->id)->exists()) {
+            return response()->json(["Message" => "have not registered as landowner, please register first", "Status" => false], 200);
+        } else {
+            return response(true, 200);
+        }
+    }
 
     public function create_land(Request $req)
     {
-        $u = Auth::User();
+        $u = Auth::user();
         if(!Landowner::where('user_id', $u->id)->exists()) {
             return response()->json(["Message" => "have not registered as landowner, please register first", "Status" => false], 400);
-        }
+        }   
 
         $validator = Validator::make($req->all(), [
             "land_name" => "required",
@@ -97,7 +129,8 @@ if ($landowner) {
             "provinsi" => "required",
             "kota" => "required",
             "kecamatan" => "required",
-            "kelurahan" => "required"
+            "kelurahan" => "required",
+            "batas_tagihan" => "required"
         ]);
 
         if($validator->fails()) {
@@ -105,8 +138,10 @@ if ($landowner) {
         }
 
         try {
+            $slug = strtolower(implode("-", explode(" ", $req->land_name)));
             $land = new Land;
-            $req->merge([ "landowner_id" => Landowner::where("user_id", $u->id)->first()->id ]);
+            $req->merge([ "landowner_id" => Landowner::where("user_id", $u->id)->first()->id, 
+            "slug" => $slug]);
             $land->fill($req->all());
             $land->save();
             return response($land);

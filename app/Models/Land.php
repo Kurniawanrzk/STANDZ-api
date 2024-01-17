@@ -21,7 +21,9 @@ class Land extends Model
         'provinsi',
         'kota',
         'kecamatan',
-        'kelurahan'
+        'batas_tagihan',
+        'kelurahan',
+        "slug"
     ];
 
     public function reviews()

@@ -4,17 +4,48 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Validator, Hash, Log, Auth};
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
 
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register' , 'handleGoogleCallback', 'redirectToGoogle']]);
     }
 
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        try {
+            $user = Socialite::driver('google')->user();
+            $finduser = User::where('google_id', $user->id)->first();
+            if ($finduser){
+                $token = Auth::login($finduser);
+                return redirect()->intended("http://localhost:3000/login?token={$token}&status=login&auth=google");
+            } else {
+                $newUser = User::create([
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'google_id' => $user->id,
+                    'username' => $user->name,
+                    'role_id' => 1,
+                    'password' => Hash::make($user->name . $user->email)
+                ]);
+                $token = Auth::login($newUser);
+                return redirect()->intended("http://localhost:3000/login?token={$token}&status=register&auth=google");
+            }
+        } catch (Exception $th) {
+            dd($th);
+        }
+}
     public function user() {
         $u = Auth::user();
         unset($u->password);
@@ -22,7 +53,6 @@ class AuthController extends Controller
         unset($u->role_id);
         unset($u->created_at);
         unset($u->updated_at);
-        unset($u->id);
         return $u;
     }
 
@@ -70,10 +100,6 @@ class AuthController extends Controller
         return $this->respondWithToken($token);
     }
 
-    public function me()
-    {
-        return response()->json(auth()->user());
-    }
 
     public function refresh()
     {

@@ -307,8 +307,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `google_id`, `name`, `username`, `email`, `email_verified_at`, `password`, `role_id`, `remember_token`, `created_at`, `updated_at`) VALUES
 (12, NULL, 'adit euy', 'Adit', 'adit@gmail.com', NULL, '$2y$12$gKkTLfEqMKpQ5oL/JdElHOh7zzi0caqVg./LFOi8Mfl53jAmNttqC', 1, NULL, '2024-01-16 01:44:14', '2024-01-16 01:44:14'),
 (13, NULL, 'adit euy', 'Indah', 'indah@gmail.com', NULL, '$2y$12$RrCt/D39QowO/2CoDmRo4uw4T394VSicdKB3.qqPcg6Rx9aQ.7TSu', 1, NULL, '2024-01-16 01:44:23', '2024-01-16 01:44:23'),
-(14, '111559588763822650299', 'Kurniawan Rizki', 'Kurniawan Rizki', 'krizki.work@gmail.com', NULL, '$2y$12$wkwnLWawlinL1kGE7sKcJO8YO4vI.AvNlIhlZ5QlfJKUSf/PCbYBq', 1, NULL, '2024-01-16 01:52:40', '2024-01-16 01:52:40'),
-(15, '103343301980560015899', 'Kurniawan Rizky', 'Kurniawan Rizky', 'kurniawanrz205@gmail.com', NULL, '$2y$12$SGs4U2J.NQzY9LYNKUxDcuI6N2kZUFUZDBHYTqQr6W4MDjALYxf3.', 1, NULL, '2024-01-17 11:51:11', '2024-01-17 11:51:11');
+(14, '0', 'Kurniawan Rizki', 'Kurniawan Rizki', 'krizki.work@gmail.com', NULL, '$2y$12$wkwnLWawlinL1kGE7sKcJO8YO4vI.AvNlIhlZ5QlfJKUSf/PCbYBq', 1, NULL, '2024-01-16 01:52:40', '2024-01-16 01:52:40'),
+(15, '0', 'Kurniawan Rizky', 'Kurniawan Rizky', 'kurniawanrz205@gmail.com', NULL, '$2y$12$SGs4U2J.NQzY9LYNKUxDcuI6N2kZUFUZDBHYTqQr6W4MDjALYxf3.', 1, NULL, '2024-01-17 11:51:11', '2024-01-17 11:51:11');
 
 --
 -- Indexes for dumped tables

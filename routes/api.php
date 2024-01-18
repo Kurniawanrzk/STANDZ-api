@@ -50,7 +50,7 @@ Route::prefix('v1')->group(function() {
         Route::post('message',[ChatController::class, 'sendPrivateMessage']);
         Route::get('message/{room_id}',[ChatController::class, 'getMessage']);
         Route::post('create/room',[ChatController::class, 'createRoom']);
-
+        Route::get("get/", [ChatController::class, 'getAllChatUser']);
 
     });
 })->middleware('api');

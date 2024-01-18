@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Events\Message;
+use App\Events\NotifMessage;
+use App\Events\NotifMessageOther;
 use App\Events\PrivateMessage;
 use App\Http\Controllers\Controller;
 use App\Models\{Message as ModelsMessage, User};
@@ -15,6 +17,40 @@ class ChatController extends Controller
         $this->middleware('auth:api');
     }
 
+    public function getAllChatUser() 
+    {   
+        $u = auth()->user();
+        
+        $rooms = Room::where('user_1', $u->id)
+                    ->orWhere('user_2', $u->id)
+                    ->get();
+    
+        $newRooms = [];
+    
+        foreach($rooms as $r) {
+            $user1 = User::find($r->user_1)->username;
+            $user2 = User::find($r->user_2)->username;
+    
+            $latestMsg = ModelsMessage::where('room_id', $r->id)
+                            ->latest()
+                            ->first();
+    
+            $newRooms[] = [
+                'room_id' => $r->id,
+                'user_id' => $u->username,
+                'user_receiver' => ($r->user_1 == $u->id) ? $user2 : $user1,
+                'data' => [
+                    'room_id' => $r->id,
+                    'user_1' => $user1,
+                    'user_2' => $user2,
+                    'latest_msg' => $latestMsg,
+                ],
+            ];
+        }
+    
+        return $newRooms;
+    }
+    
     public function createRoom(Request $req) {
         $u = auth()->user();
         $u_2 = User::where("username", $req->landowner)->first();
@@ -49,14 +85,17 @@ class ChatController extends Controller
                         $data = [
                             'sender' => $request->user_id,
                             'message' => $request->message,
+                            'receiver' => $receiver_id,
                             'room_id' => $rooms->id
                         ];
                 
                 
                         broadcast(new PrivateMessage($data))->toOthers();
-                        
                         ModelsMessage::create($data);
-                        return response()->json(['status' => 'Message sent']);
+                        $da = $this->getAllChatUser();
+                        broadcast(new NotifMessage($data['sender']))->toOthers();
+                        broadcast(new NotifMessageOther($data['receiver']))->toOthers();
+                        return response()->json(['status' => "Message sended"]);
         } else {
 
             $room = Room::create([
@@ -66,13 +105,15 @@ class ChatController extends Controller
             $data = [
                 'sender' => $request->user_id,
                 'message' => $request->message,
+                'receiver' => $receiver_id,
                 'room_id' => $room->id
             ];
     
     
             broadcast(new PrivateMessage($data))->toOthers();
-            
             ModelsMessage::create($data);
+            $da = $this->getAllChatUser();
+            broadcast(new NotifMessage($da))->toOthers();
             return response()->json(['status' => 'Message sent']);
         }
 

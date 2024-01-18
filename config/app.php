@@ -17,6 +17,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+    'client_web' => env("CLIENT_WEBSITE"),
 
     /*
     |--------------------------------------------------------------------------

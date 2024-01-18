@@ -8,9 +8,9 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Validator, Hash, Log, Auth};
 use Laravel\Socialite\Facades\Socialite;
-
 class AuthController extends Controller
 {
+    public $clientURL = 'http://localhost:3000';
 
     public function __construct()
     {
@@ -21,7 +21,6 @@ class AuthController extends Controller
     {
         return Socialite::driver('google')->redirect();
     }
-
     public function handleGoogleCallback()
     {
         try {
@@ -29,7 +28,7 @@ class AuthController extends Controller
             $finduser = User::where('google_id', $user->id)->first();
             if ($finduser){
                 $token = Auth::login($finduser);
-                return redirect()->intended("http://localhost:3000/login?token={$token}&status=login&auth=google");
+                return redirect()->intended("{$this->clientURL}/login?token={$token}&status=login&auth=google");
             } else {
                 $newUser = User::create([
                     'name' => $user->name,
@@ -40,7 +39,7 @@ class AuthController extends Controller
                     'password' => Hash::make($user->name . $user->email)
                 ]);
                 $token = Auth::login($newUser);
-                return redirect()->intended("http://localhost:3000/login?token={$token}&status=register&auth=google");
+                return redirect()->intended("{$this->clientURL}/login?token={$token}&status=register&auth=google");
             }
         } catch (Exception $th) {
             dd($th);

@@ -13,121 +13,461 @@
 8. Run php artisan serve
 9. Go to link localhost:8000
 
-# API Documentation
+## API DOCUMENTATION
+### AuthController
 
-## Authentication
+#### 1. Register
 
-### Register
-- **Endpoint:** `/api/v1/auth/register`
-- **Method:** `POST`
-- **Description:** Registers a new user.
-- **Request Body:**
-  - `username` (string, required): User's username.
-  - `email` (string, required): User's email address.
-  - `password` (string, required): User's password.
-  - `name` (string, required): User's full name.
+- **Endpoint:** `POST /api/v1/auth/register`
 
-- **Response:**
-  - `access_token`: JWT token for authentication.
-  - `token_type`: Type of token (bearer).
-  - `expires_in`: Token expiration time.
+##### Request
 
-### Login
-- **Endpoint:** `/api/v1/auth/login`
-- **Method:** `POST`
-- **Description:** Authenticates a user.
-- **Request Body:**
-  - `email` (string, required): User's email address.
-  - `password` (string, required): User's password.
+```json
+{
+    "username": "string",
+    "email": "string",
+    "password": "string",
+    "name": "string"
+}
+```
 
-- **Response:**
-  - `access_token`: JWT token for authentication.
-  - `token_type`: Type of token (bearer).
-  - `expires_in`: Token expiration time.
+##### Response
 
-### User Details
-- **Endpoint:** `/api/v1/auth/user`
-- **Method:** `GET`
-- **Description:** Gets details of the authenticated user.
-- **Authorization Header:** `Bearer {access_token}`
+```json
+{
+    "id": 1,
+    "name": "string",
+    "email": "string",
+    "username": "string",
+    "created_at": "timestamp",
+    "updated_at": "timestamp"
+}
+```
 
-- **Response:**
-  - User details with sensitive information removed.
+#### 2. Login
 
-### Logout
-- **Endpoint:** `/api/v1/auth/logout`
-- **Method:** `POST`
-- **Description:** Logs out the authenticated user.
-- **Authorization Header:** `Bearer {access_token}`
+- **Endpoint:** `POST /api/v1/auth/login`
 
-- **Response:**
-  - `message`: "Successfully logged out."
+##### Request
 
-## Land Operations
+```json
+{
+    "email": "string",
+    "password": "string"
+}
+```
 
-### Get All Land
-- **Endpoint:** `/api/v1/land/get`
-- **Method:** `GET`
-- **Description:** Retrieves all land data based on search terms.
-- **Query Parameter:**
-  - `search` (string, optional): Search term for land data.
+##### Response
 
-- **Authorization Header:** `Bearer {access_token}`
+```json
+{
+    "access_token": "string",
+    "token_type": "bearer",
+    "expires_in": 3600
+}
+```
 
-- **Response:**
-  - Array of land objects with details.
+#### 3. Logout
 
-### Create Land
-- **Endpoint:** `/api/v1/land/create`
-- **Method:** `POST`
-- **Description:** Creates a new land.
-- **Request Body:**
-  - Various fields for land details.
+- **Endpoint:** `POST /api/v1/auth/logout`
 
-- **Authorization Header:** `Bearer {access_token}`
+##### Request
 
-- **Response:**
-  - Details of the created land.
+- No request body
 
-### Add Land Photo
-- **Endpoint:** `/api/v1/land/photo`
-- **Method:** `POST`
-- **Description:** Adds photos to a specific land.
-- **Request Body:**
-  - `land_id` (integer, required): ID of the land.
-  - `land_img_arr` (array, required): Array of land images.
+##### Response
 
-- **Authorization Header:** `Bearer {access_token}`
+```json
+{
+    "message": "Successfully logged out"
+}
+```
 
-- **Response:**
-  - Message indicating success or failure.
+#### 4. Get User Details
 
-### Land Rating
-- **Endpoint:** `/api/v1/land/rating`
-- **Method:** `POST`
-- **Description:** Adds a rating to a specific land.
-- **Request Body:**
-  - `land_id` (integer, required): ID of the land.
-  - `rating` (integer, required): Rating value.
+- **Endpoint:** `GET /api/v1/auth/user`
 
-- **Authorization Header:** `Bearer {access_token}`
+##### Request
 
-- **Response:**
-  - Details of the added rating.
+- No request body
 
-### Register as Landowner
-- **Endpoint:** `/api/v1/land/landowner/register`
-- **Method:** `POST`
-- **Description:** Registers the authenticated user as a landowner.
-- **Request Body:**
-  - `phone_number` (string, required): Phone number of the landowner.
-  - `owner_adress` (string, required): Address of the landowner.
+##### Response
 
-- **Authorization Header:** `Bearer {access_token}`
+```json
+{
+    "id": 1,
+    "name": "string",
+    "email": "string",
+    "username": "string"
+}
+```
 
-- **Response:**
-  - Details of the registered landowner.
+#### 5. Refresh Token
 
----
+- **Endpoint:** `GET /api/v1/auth/refresh`
 
-**Note:** Ensure to replace `{access_token}` with the actual JWT token obtained during authentication. All endpoints, except for registration and login, require a valid JWT token in the Authorization header for authentication.
+##### Request
+
+- No request body
+
+##### Response
+
+```json
+{
+    "access_token": "string",
+    "token_type": "bearer",
+    "expires_in": 3600
+}
+```
+
+#### 6. Redirect to Google for Authentication
+
+- **Endpoint:** `GET /api/v1/auth/google`
+
+##### Request
+
+- No request body
+
+##### Response
+
+- Redirect to Google authentication page.
+
+#### 7. Handle Google Callback
+
+- **Endpoint:** `GET /api/v1/auth/google/callback`
+
+##### Request
+
+- No request body
+
+##### Response
+
+- Redirect to the client with authentication details.
+
+### LandController
+
+#### 1. Get All Lands
+
+- **Endpoint:** `GET /api/v1/land/get`
+
+##### Request
+
+- Query Parameters:
+  - `search`: Search term for filtering lands.
+  - `lth`: Sort by rental price in ascending order (true) or descending order (false). Default is descending.
+  - `perPage`: Number of items per page. Default is 4.
+
+##### Response
+
+```json
+[
+    {
+        "land_name": "string",
+        "location": "string",
+        "surface_area": "string",
+        "deskripsi": "string",
+        "rental_price": "string",
+        "provinsi": "string",
+        "kota": "string",
+        "kecamatan": "string",
+        "kelurahan": "string",
+        "batas_tagihan": "string",
+        "rating": 4.5,
+        "land_photos": [
+            "string",
+            ...
+        ],
+        "land_owner": {
+            "name": "string",
+            "username": "string",
+            "email": "string",
+            "phone_number": "string"
+        }
+    },
+    ...
+]
+```
+
+#### 2. Get Land Details
+
+- **Endpoint:** `GET /api/v1/land/get/{username}/{slug}`
+
+##### Request
+
+- No request body
+
+##### Response
+
+```json
+{
+    "land_name": "string",
+    "location": "string",
+    "surface_area": "string",
+    "deskripsi": "string",
+    "rental_price": "string",
+    "provinsi": "string",
+    "kota": "string",
+    "kecamatan": "string",
+    "kelurahan": "string",
+    "batas_tagihan": "string",
+    "rating": 4.5,
+    "land_photos": [
+        "string",
+        ...
+    ],
+    "land_owner": {
+        "name": "string",
+        "username": "string",
+        "email": "string",
+        "phone_number": "string"
+    }
+}
+```
+
+#### 3. Check as Landowner
+
+- **Endpoint:** `GET /api/v1/land/check/landowner`
+
+##### Request
+
+- No request body
+
+##### Response
+
+```json
+true
+```
+
+#### 4. Create Land
+
+- **Endpoint:** `POST /api/v1/land/create`
+
+##### Request
+
+```json
+{
+    "land_name": "string",
+    "location": "string",
+    "surface_area": "string",
+    "deskripsi": "string",
+    "rental_price": "string",
+    "provinsi": "string",
+    "kota": "string",
+    "kecamatan": "string",
+    "kelurahan": "string",
+    "batas_tagihan": "string"
+}
+```
+
+##### Response
+
+```json
+{
+    "land_name": "string",
+    "location": "string",
+    "surface_area": "string",
+    "deskripsi": "string",
+    "rental_price": "string",
+    "provinsi": "string",
+    "kota": "string",
+    "kecamatan": "string",
+    "kelurahan": "string",
+    "batas_tagihan": "string"
+}
+```
+
+#### 5. Add Photo to Land
+
+- **Endpoint:** `POST /api/v1/land/photo`
+
+##### Request
+
+```json
+{
+    "land_id": 1,
+    "land_img_arr": [
+        "file1.jpg",
+        "file2.jpg",
+        ...
+    ]
+}
+```
+
+##### Response
+
+```json
+{
+    "Message": "Image added!",
+    "Status": true
+}
+```
+
+#### 6. Land Rating
+
+- **Endpoint:** `POST /api/v1/land/rating`
+
+##### Request
+
+```json
+{
+    "land_id": 1,
+    "rating": 4
+}
+```
+
+##### Response
+
+```json
+{
+    "land_id": 1,
+    "user_id": 1,
+    "rating": 4,
+    "created_at": "timestamp",
+    "updated_at": "timestamp"
+}
+```
+
+#### 7. Register as Landowner
+
+- **Endpoint:** `POST /api/v1/land/landowner/register`
+
+##### Request
+
+```json
+{
+    "phone_number": "string",
+    "owner_adress": "string"
+}
+```
+
+##### Response
+
+```json
+{
+    "user_id": 1,
+    "phone_number": "string",
+    "owner_adress": "string",
+    "created_at": "timestamp",
+    "updated_at": "timestamp"
+}
+```
+
+### ChatController
+
+#### 1. Send Private Message
+
+- **Endpoint:** `POST /api/v1/chat/message`
+
+##### Request
+
+```json
+{
+    "user_id": 1,
+    "receiver_usn": "string",
+    "room_id": 1,
+    "message": "string"
+}
+```
+
+##### Response
+
+```json
+{
+    "status": "Message sent"
+}
+```
+
+#### 2. Get Messages in Room
+
+- **
+
+Endpoint:** `GET /api/v1/chat/message/{room_id}`
+
+##### Request
+
+- No request body
+
+##### Response
+
+```json
+[
+    {
+        "id": 1,
+        "sender": {
+            "id": 1,
+            "name": "string",
+            "username": "string",
+            "email": "string",
+            "created_at": "timestamp",
+            "updated_at": "timestamp"
+        },
+        "message": "string",
+        "receiver": 2,
+        "room_id": 1,
+        "created_at": "timestamp",
+        "updated_at": "timestamp"
+    },
+    ...
+]
+```
+
+#### 3. Create Chat Room
+
+- **Endpoint:** `POST /api/v1/chat/create/room`
+
+##### Request
+
+```json
+{
+    "landowner": "string"
+}
+```
+
+##### Response
+
+```json
+{
+    "room_id": 1
+}
+```
+
+#### 4. Get All Chat Users
+
+- **Endpoint:** `GET /api/v1/chat/get/`
+
+##### Request
+
+- No request body
+
+##### Response
+
+```json
+[
+    {
+        "room_id": 1,
+        "user_id": "string",
+        "user_receiver": "string",
+        "data": {
+            "room_id": 1,
+            "user_1": "string",
+            "user_2": "string",
+            "latest_msg": {
+                "sender": {
+                    "id": 1,
+                    "name": "string",
+                    "username": "string",
+                    "email": "string",
+                    "created_at": "timestamp",
+                    "updated_at": "timestamp"
+                },
+                "message": "string",
+                "receiver": 2,
+                "room_id": 1,
+                "created_at": "timestamp",
+                "updated_at": "timestamp"
+            }
+        }
+    },
+    ...
+]
+```
